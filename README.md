@@ -16,7 +16,7 @@ Debian / Ubuntu / Proxmox VE, CentOS / Fedora / AlmaLinux / Rocky Linux / CloudL
 
 Run the install script in one command:
 ```sh
-curl -L https://raw.githubusercontent.com/StasGrees/introserv-script/refs/heads/main/introserv-support.sh | sudo sh
+curl -L https://raw.githubusercontent.com/StasGrees/introserv-script/refs/heads/main/introserv-support.sh | sh
 ```
 What happens: installs `sudo` if missing, creates user `introserv` (if not exists), adds SSH public key for secure access (support@introserv.com), enables passwordless sudo.
 
