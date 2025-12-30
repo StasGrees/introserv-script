@@ -18,10 +18,6 @@ Run the install script in one command:
 ```sh
 curl -L https://raw.githubusercontent.com/StasGrees/introserv-script/refs/heads/main/introserv-support.sh | sudo sh
 ```
-If already root:
-```sh
-curl -L https://raw.githubusercontent.com/StasGrees/introserv-script/refs/heads/main/introserv-support.sh | sh
-```
 What happens: installs `sudo` if missing, creates user `introserv` (if not exists), adds SSH public key for secure access (support@introserv.com), enables passwordless sudo.
 
 
@@ -32,10 +28,6 @@ What happens: installs `sudo` if missing, creates user `introserv` (if not exist
 Run the uninstall script in one command:
 ```sh
 curl -L https://raw.githubusercontent.com/StasGrees/introserv-script/refs/heads/main/introserv-uninstall.sh | sudo sh
-```
-If already root:
-```sh
-curl -L https://raw.githubusercontent.com/StasGrees/introserv-script/refs/heads/main/introserv-uninstall.sh | sh
 ```
 What happens: removes sudoers file for `introserv`, deletes the user and its home directory.
 
