@@ -1,64 +1,56 @@
 #!/bin/sh
 
 SUPPORT_USER="introserv"
-KEY="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCw1Gcf0jUEXcCkyfG6Us8yjqcUGuE1GOL5+9N0cpE01VwbCxRG/55w8yUQoiEfzQmeD8DSmlrgrRP8Tm2GVgn7CFD1wLhbakL3+dgPcgyaT7I8cy/4+UQxPN1aysHP0rbSN1GgqNcv/CN8og/6GqJ3Y9Jw061wIP3mxM9P3pyOUZd4f6EWCPV77dYLwpabDQEeE88owjYSRMxRWU8yjVk3PVZr+JcwXtyBpf/2E/RSn2JJQgG0YiMUeZwNoklQMfDVnoev+NHlK7vfXKVro4QqAA0B5T1Noox8olLRLjbqMZAn0QtxF4NJ7Q9fgiIIbiUyTqhqsEDLTBdOvzE+gWOptmxW0Nu+SB35K88FZyeRUwGXcw3874I2RZwgedHJDQ49Lx7FxU5Z27SAzfqaTCV2RvIesCAAGRl2VMa2TAldGbIQqZ5U+VkqS+P/uKsJOqL+JX/et1/HjyiLY4BmwLUH/q7aGCVE4Tdk/24E2DkZnG+C3QfBFLNxrUaHAiIiKbwpYPxAXASPCRy5Y60KhJfLd++qqzJfqEfsDlWiQHecDOtGkqtKYb2KGnQAhHF7aYzCfAscBRW+nnbXJsBWzsIeS8kpHNWWVwvUtroCJ0LLjq7APmmCrrGtpYwhBqm2RtnEBIA2h1LhjSLZ4uIQ5vCk+C32Qq9KWVhCssTqnvw3wQ== support@introserv.com"
+KEY="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC+MakfCM7tvGY/zOBhoy0ZiCt0N8ZzhF7R0buL+fWtol6O9YWKd53Srj2GI75e8skkZpz7Q4wT2jGWNZ0oB/X6HrQSNbD/u+qmoPa1b9Fw6jVYqcgI3Qgy8zgBwhNdIratO00jnlL91LSqUDrtF0o4N/zFFhZ/cyVhUnMCd6i8Mykj6P8oabCqQmlW1fsrE3SzKqCMojWaemsrV1b6PAKLWESkqfBF72tQSTbhVMeoGu6FGEb+ou7DsKUTBs/TSRrxYojQBT55zlncxp1EsA1Um3EbIoaS2PodXU3NfQkX0QQakslgSiCJW+fgR7/bFckgrDlwIhewk/LJu5L6cdnq/dUT4lWjfGR80G8t33lv2hYKCh9rYGLK++3mBtBiKnZKUAiITraMP6hMPkREAIWv79zYtFUJSrCmDTIYUmSDTZHUi0srvP/ehd2mV/6zyqvi2fOmdKMENloIvjI9So0qXv+x1CzX28GaIXQNw8Acm9vHo8MMxKwdJULRCIodmBxaHgLZXkN/RHBNVwtrvO3YeMq777YOjLoKoYwvZ4Jm35yghIYH+9ddB/xBdgrcAL7Umcr88E/a30tW046REDlRel9CxcmyLFwnTao6BfswDBA0IYMdvRcFt8h4QyUXPEM/UF4/MbLNaxmVsLsdul++KQ9Bf2MiBS4rPh/864DzvQ== support@introserv.com"
 
-log() { echo "[INFO] $1"; }
-err() { echo "[ERROR] $1"; exit 1; }
+log() {
+    echo "[INFO] $1"
+}
 
-if [ "$(id -u)" != "0" ]; then
-    command -v sudo >/dev/null 2>&1 || err "sudo is required"
-    log "Re-executing with sudo"
-    SCRIPT="$(cat)"
-    echo "$SCRIPT" | sudo sh
-    exit
-fi
+error() {
+    echo "[ERROR] $1"
+}
 
-OS="$(uname -s)"
-
-log "Installing sudo if needed"
-
-if [ "$OS" = "FreeBSD" ]; then
-    pkg install -y sudo >/dev/null 2>&1 || true
-else
-    if command -v apt-get >/dev/null 2>&1; then
-        apt-get update -y && apt-get install -y sudo
-    elif command -v dnf >/dev/null 2>&1; then
-        dnf install -y sudo
-    elif command -v yum >/dev/null 2>&1; then
-        yum install -y sudo
-    elif command -v pacman >/dev/null 2>&1; then
-        pacman -Sy --noconfirm sudo
-    elif command -v apk >/dev/null 2>&1; then
-        apk add sudo
+if [ "$(id -u)" -ne 0 ]; then
+    if command -v sudo >/dev/null 2>&1; then
+        log "Root privileges are required. Re-executing the script using sudo."
+        exec sudo sh "$0"
+    else
+        error "sudo is not installed."
+        echo "Please install sudo or run this script as root."
+        exit 1
     fi
 fi
+
+log "Running as root"
 
 if id "$SUPPORT_USER" >/dev/null 2>&1; then
     log "User $SUPPORT_USER already exists"
 else
-    log "Creating user $SUPPORT_USER"
-    if [ "$OS" = "FreeBSD" ]; then
+    if [ "$(uname -s)" = "FreeBSD" ]; then
         pw useradd "$SUPPORT_USER" -m -s /bin/sh
     else
         useradd -m -s /bin/sh "$SUPPORT_USER"
     fi
+    log "User $SUPPORT_USER created"
 fi
 
-HOME_DIR="$(getent passwd "$SUPPORT_USER" | cut -d: -f6 2>/dev/null)"
-[ -z "$HOME_DIR" ] && HOME_DIR="/home/$SUPPORT_USER"
-
+HOME_DIR=$(getent passwd "$SUPPORT_USER" | cut -d: -f6)
 mkdir -p "$HOME_DIR/.ssh"
 echo "$KEY" > "$HOME_DIR/.ssh/authorized_keys"
 chmod 700 "$HOME_DIR/.ssh"
 chmod 600 "$HOME_DIR/.ssh/authorized_keys"
-chown -R "$SUPPORT_USER:$SUPPORT_USER" "$HOME_DIR/.ssh"
+chown -R "$SUPPORT_USER:$SUPPORT_USER" "$HOME_DIR"
+log "SSH key added"
 
-if [ "$OS" = "FreeBSD" ]; then
-    echo "$SUPPORT_USER ALL=(ALL) NOPASSWD: ALL" > "/usr/local/etc/sudoers.d/$SUPPORT_USER"
+if [ "$(uname -s)" = "FreeBSD" ]; then
+    SUDOERS_DIR="/usr/local/etc/sudoers.d"
 else
-    echo "$SUPPORT_USER ALL=(ALL) NOPASSWD: ALL" > "/etc/sudoers.d/$SUPPORT_USER"
+    SUDOERS_DIR="/etc/sudoers.d"
 fi
 
-log "User $SUPPORT_USER installed successfully"
+echo "$SUPPORT_USER ALL=(ALL) NOPASSWD: ALL" > "$SUDOERS_DIR/$SUPPORT_USER"
+chmod 440 "$SUDOERS_DIR/$SUPPORT_USER"
+log "Passwordless sudo configured"
 
+log "Setup completed successfully"
