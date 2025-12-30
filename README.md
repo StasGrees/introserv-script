@@ -5,7 +5,7 @@ This package provides two scripts for managing Introserv support access: install
 
 
 
-## Supported Systems
+## Supported OS
 
 Debian / Ubuntu / Proxmox VE, CentOS / Fedora / AlmaLinux / Rocky Linux / CloudLinux, Arch Linux, Alpine Linux, openSUSE / SLES, FreeBSD
 
