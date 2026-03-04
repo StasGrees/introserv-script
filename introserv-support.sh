@@ -30,7 +30,7 @@ else
     if [ "$(uname -s)" = "FreeBSD" ]; then
         pw useradd "$SUPPORT_USER" -m -s /bin/sh
     else
-        useradd -m -s /bin/sh "$SUPPORT_USER"
+        useradd -m -s /bin/bash "$SUPPORT_USER"
     fi
     log "User $SUPPORT_USER created"
 fi
